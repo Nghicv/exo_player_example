@@ -22,7 +22,8 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".services.VideoPlayerService"/>
+        <service android:name=".services.VideoPlayerService"
+            android:process=":servicePlayer"/>
     </application>
 
 </manifest>
