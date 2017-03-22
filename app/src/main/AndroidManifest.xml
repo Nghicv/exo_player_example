@@ -15,7 +15,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".screen.MainActivity">
+        <activity android:name=".screen.splash.SplashActivity"
+            android:theme="@style/Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -23,10 +24,12 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".screen.MainActivity"/>
+
         <service android:name=".services.VideoPlayerService"/>
         <meta-data
             android:name="io.fabric.ApiKey"
-            android:value="3f850b36ecd4e7877ffd615f96a8a7661773f705" />
+            android:value="3f850b36ecd4e7877ffd615f96a8a7661773f705"/>
     </application>
 
 </manifest>

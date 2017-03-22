@@ -5,8 +5,12 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
+import android.support.design.internal.BottomNavigationItemView;
+import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
+import android.view.MenuItem;
 import android.view.View;
 import com.project.nghicv.videochathead.R;
 import com.project.nghicv.videochathead.services.VideoPlayerService;
@@ -36,6 +40,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        BottomNavigationView navigationView =
+                (BottomNavigationView) findViewById(R.id.bottom_bar);
+        navigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                return true;
+            }
+        });
     }
 
     @Override
