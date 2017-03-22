@@ -1,4 +1,4 @@
-package com.project.nghicv.videochathead;
+package com.project.nghicv.videochathead.screen;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -8,6 +8,7 @@ import android.provider.Settings;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import com.project.nghicv.videochathead.R;
 import com.project.nghicv.videochathead.services.VideoPlayerService;
 
 public class MainActivity extends AppCompatActivity {

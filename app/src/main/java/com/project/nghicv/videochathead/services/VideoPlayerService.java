@@ -1,17 +1,19 @@
 package com.project.nghicv.videochathead.services;
 
+import android.animation.Animator;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.net.Uri;
 import android.os.IBinder;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
@@ -30,6 +32,7 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
+import com.google.android.exoplayer2.ui.PlaybackControlView;
 import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.exoplayer2.upstream.BandwidthMeter;
 import com.google.android.exoplayer2.upstream.DataSource;
@@ -44,9 +47,17 @@ public class VideoPlayerService extends Service {
 
     private WindowManager mWindowManager;
     private View mVideoPlayerLayout;
-    private LinearLayout mLinearLayoutHeader;
+    private RelativeLayout mLayoutHeader;
     private SimpleExoPlayerView mSimpleExoPlayerView;
     private SimpleExoPlayer mPlayer;
+
+    private PlaybackControlView.VisibilityListener mVisibilityListener =
+            new PlaybackControlView.VisibilityListener() {
+                @Override
+                public void onVisibilityChange(int visibility) {
+                    mLayoutHeader.setVisibility(visibility);
+                }
+            };
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -67,9 +78,10 @@ public class VideoPlayerService extends Service {
                         WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);
 
         params.gravity = Gravity.TOP | Gravity.LEFT;
+        params.windowAnimations = android.R.style.Animation_Toast;
         params.x = 0;
-        params.y = 100;
-        mVideoPlayerLayout.setOnTouchListener(new View.OnTouchListener() {
+        params.y = dpToPx(60);
+        mLayoutHeader.setOnTouchListener(new View.OnTouchListener() {
             private int initialX;
             private int initialY;
             private float initialTouchX;
@@ -100,6 +112,11 @@ public class VideoPlayerService extends Service {
     }
 
     @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        return START_NOT_STICKY;
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
         if (mVideoPlayerLayout != null) mWindowManager.removeView(mVideoPlayerLayout);
@@ -111,16 +128,42 @@ public class VideoPlayerService extends Service {
     private void setUpLayout() {
         LayoutInflater inflater = LayoutInflater.from(getBaseContext());
         mVideoPlayerLayout = inflater.inflate(R.layout.layout_video_player, null);
+
+        mLayoutHeader = (RelativeLayout) mVideoPlayerLayout.findViewById(R.id.ll_header);
         mSimpleExoPlayerView =
                 (SimpleExoPlayerView) mVideoPlayerLayout.findViewById(R.id.simple_exo_player_view);
         mSimpleExoPlayerView.requestFocus();
         mSimpleExoPlayerView.setUseController(true);
-        mVideoPlayerLayout.findViewById(R.id.btn_close).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                stopSelf();
-            }
-        });
+        mVideoPlayerLayout.findViewById(R.id.btn_close)
+                .setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        mVideoPlayerLayout.animate()
+                                .alpha(0)
+                                .setDuration(500).setListener(new Animator.AnimatorListener() {
+                            @Override
+                            public void onAnimationStart(Animator animator) {
+
+                            }
+
+                            @Override
+                            public void onAnimationEnd(Animator animator) {
+                                stopSelf();
+                            }
+
+                            @Override
+                            public void onAnimationCancel(Animator animator) {
+
+                            }
+
+                            @Override
+                            public void onAnimationRepeat(Animator animator) {
+
+                            }
+                        });
+                    }
+                });
+        mSimpleExoPlayerView.setControllerVisibilityListener(mVisibilityListener);
     }
 
     private void initializePlayer() {
@@ -128,8 +171,7 @@ public class VideoPlayerService extends Service {
         BandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
         TrackSelection.Factory videoTrackSelectionFactory =
                 new AdaptiveTrackSelection.Factory(bandwidthMeter);
-        TrackSelector trackSelector =
-                new DefaultTrackSelector(videoTrackSelectionFactory);
+        TrackSelector trackSelector = new DefaultTrackSelector(videoTrackSelectionFactory);
 
         // 2. Create a default LoadControl
         LoadControl loadControl = new DefaultLoadControl();
@@ -139,17 +181,17 @@ public class VideoPlayerService extends Service {
 
         mSimpleExoPlayerView.setPlayer(mPlayer);
 
-
         DefaultBandwidthMeter defaultBandwidthMeter = new DefaultBandwidthMeter();
         // Produces DataSource instances through which media data is loaded.
-        DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(this,
-                Util.getUserAgent(this, "exoplayerexample"), defaultBandwidthMeter);
+        DataSource.Factory dataSourceFactory =
+                new DefaultDataSourceFactory(this, Util.getUserAgent(this, "exoplayerexample"),
+                        defaultBandwidthMeter);
         // Produces Extractor instances for parsing the media data.
         ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
         // This is the MediaSource representing the media to be played.
         Uri uri = Uri.parse("http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4");
-        MediaSource videoSource = new ExtractorMediaSource(uri,
-                dataSourceFactory, extractorsFactory, null, null);
+        MediaSource videoSource =
+                new ExtractorMediaSource(uri, dataSourceFactory, extractorsFactory, null, null);
       /*  MediaSource videoSource = new HlsMediaSource(uri, dataSourceFactory, 1, null,
                 null);*/
         // Prepare the mPlayer with the source.
@@ -159,20 +201,17 @@ public class VideoPlayerService extends Service {
         mPlayer.addListener(new ExoPlayer.EventListener() {
             @Override
             public void onLoadingChanged(boolean isLoading) {
-                Log.v(TAG,"Listener-onLoadingChanged...");
-
+                Log.v(TAG, "Listener-onLoadingChanged...");
             }
 
             @Override
             public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
-                Log.v(TAG,"Listener-onPlayerStateChanged...");
-
+                Log.v(TAG, "Listener-onPlayerStateChanged...");
             }
 
             @Override
             public void onTimelineChanged(Timeline timeline, Object manifest) {
-                Log.v(TAG,"Listener-onTimelineChanged...");
-
+                Log.v(TAG, "Listener-onTimelineChanged...");
             }
 
             @Override
@@ -183,7 +222,7 @@ public class VideoPlayerService extends Service {
 
             @Override
             public void onPlayerError(ExoPlaybackException error) {
-                Log.v(TAG,"Listener-onPlayerError...");
+                Log.v(TAG, "Listener-onPlayerError...");
                 mPlayer.stop();
                 mPlayer.prepare(loopingSource);
                 mPlayer.setPlayWhenReady(true);
@@ -191,10 +230,14 @@ public class VideoPlayerService extends Service {
 
             @Override
             public void onPositionDiscontinuity() {
-                Log.v(TAG,"Listener-onPositionDiscontinuity...");
-
+                Log.v(TAG, "Listener-onPositionDiscontinuity...");
             }
         });
         mPlayer.setPlayWhenReady(true);
+    }
+
+    public int dpToPx(int dp) {
+        DisplayMetrics displayMetrics = getBaseContext().getResources().getDisplayMetrics();
+        return Math.round(dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT));
     }
 }

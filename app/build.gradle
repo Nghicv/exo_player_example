@@ -1,31 +1,93 @@
+buildscript {
+    repositories {
+        maven { url 'https://maven.fabric.io/public' }
+    }
+
+    dependencies {
+        classpath 'io.fabric.tools:gradle:1.+'
+    }
+}
 apply plugin: 'com.android.application'
+apply plugin: 'io.fabric'
+
+repositories {
+    maven { url 'https://maven.fabric.io/public' }
+}
+
 
 android {
-  compileSdkVersion 25
-  buildToolsVersion "25.0.2"
+  compileSdkVersion COMPILE_SDK_VERSION
+  buildToolsVersion BUILD_TOOLS_VERSI0N
   defaultConfig {
     applicationId "com.project.nghicv.videochathead"
-    minSdkVersion 15
-    targetSdkVersion 25
+    minSdkVersion MIN_SDK_VERSION
+    targetSdkVersion TARGET_SDK_VERSION
     versionCode 1
     versionName "1.0"
     testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    multiDexEnabled true
   }
+
+  def keystorePropertiesFile = rootProject.file("keystore.properties")
+  def keystoreProperties = new Properties()
+  keystoreProperties.load(new FileInputStream(keystorePropertiesFile));
+
+  signingConfigs {
+    release {
+      storeFile file(keystoreProperties['storeFile'])
+      storePassword keystoreProperties['storePassword']
+      keyAlias keystoreProperties['keyAlias']
+      keyPassword keystoreProperties['keyPassword']
+    }
+
+    debug {
+      storeFile file(keystoreProperties['storeFile'])
+      storePassword keystoreProperties['storePassword']
+      keyAlias keystoreProperties['keyAlias']
+      keyPassword keystoreProperties['keyPassword']
+    }
+  }
+
   buildTypes {
     release {
+      minifyEnabled true
+      proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+      signingConfig signingConfigs.release
+    }
+
+    debug {
       minifyEnabled false
       proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+      signingConfig signingConfigs.debug
     }
+  }
+
+  productFlavors {
+    pro {}
+
+    dev {
+      applicationIdSuffix '.dev'
+    }
+  }
+
+  dataBinding {
+    enabled true
   }
 }
 
 dependencies {
+  compile 'com.android.support:multidex:1.0.1'
+
   compile fileTree(dir: 'libs', include: ['*.jar'])
   androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
     exclude group: 'com.android.support', module: 'support-annotations'
   })
-  compile 'com.android.support:appcompat-v7:25.2.0'
+  compile "com.android.support:appcompat-v7:${SUPPORT_LIBRARY_VERSION}"
+  compile "com.android.support:design:${SUPPORT_LIBRARY_VERSION}"
   compile 'com.android.support.constraint:constraint-layout:1.0.1'
   testCompile 'junit:junit:4.12'
   compile 'com.google.android.exoplayer:exoplayer:r2.3.0'
+    compile('com.crashlytics.sdk.android:crashlytics:2.6.7@aar') {
+        transitive = true;
+    }
 }
