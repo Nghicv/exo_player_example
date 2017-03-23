@@ -1,28 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android">
     <data></data>
-    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <android.support.v4.widget.SwipeRefreshLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
         >
+
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:padding="16dp"
-            android:background="#464646"
+            android:layout_height="match_parent"
             >
-            <com.google.android.exoplayer2.ui.SimpleExoPlayerView
-                android:id="@+id/player_view"
+
+            <FrameLayout
+                android:id=""
                 android:layout_width="match_parent"
                 android:layout_height="300dp"
+                android:padding="16dp"
+                >
+
+                <com.google.android.exoplayer2.ui.SimpleExoPlayerView
+                    android:id="@+id/player_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="300dp"
+                    />
+            </FrameLayout>
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/rv_device_videos"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 />
         </FrameLayout>
-
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/rv_device_videos"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            />
-    </FrameLayout>
+    </android.support.v4.widget.SwipeRefreshLayout>
 </layout>

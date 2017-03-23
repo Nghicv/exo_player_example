@@ -1,29 +1,23 @@
 package com.project.nghicv.videochathead.screen;
 
-import android.content.Intent;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
-import android.support.design.internal.BottomNavigationItemView;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
-import android.view.View;
 import com.project.nghicv.videochathead.R;
-import com.project.nghicv.videochathead.services.VideoPlayerService;
+import com.project.nghicv.videochathead.screen.listdevicevideo.ListDeviceVideoFragment;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_CODE_OVERLAY_PERMISSION = 1;
 
+    private BottomNavigationView mBottomNavigationView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        findViewById(R.id.btn_play).setOnClickListener(new View.OnClickListener() {
+        /*findViewById(R.id.btn_play).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -38,33 +32,37 @@ public class MainActivity extends AppCompatActivity {
                     startPlayerService();
                 }
             }
-        });
-
-        BottomNavigationView navigationView =
-                (BottomNavigationView) findViewById(R.id.bottom_bar);
-        navigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+        });*/
+        mBottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_bar);
+        mBottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView
+                .OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.menu_device_video:
+                        getSupportFragmentManager().beginTransaction().replace(R.id.container,
+                                ListDeviceVideoFragment.getInstance()).commit();
+                        break;
+
+                    case R.id.menu_music:
+
+                        break;
+
+                    case R.id.menu_setting:
+
+                        break;
+
+                    case R.id.menu_youtube:
+
+                        break;
+                }
                 return true;
             }
         });
+        initContentFirstTime();
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        //stopPlayerService();
-    }
-
-    private void startPlayerService() {
-        startService(new Intent(MainActivity.this, VideoPlayerService.class));
-    }
-
-    private void stopPlayerService() {
-        stopService(new Intent(MainActivity.this, VideoPlayerService.class));
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.M)
+   /* @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -73,6 +71,11 @@ public class MainActivity extends AppCompatActivity {
                 startPlayerService();
             }
         }
+    }*/
+
+    private void initContentFirstTime() {
+        getSupportFragmentManager().beginTransaction().replace(R.id.container,
+                ListDeviceVideoFragment.getInstance()).commit();
     }
 }
 
