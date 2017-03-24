@@ -8,10 +8,12 @@ import java.util.List;
 public interface ListDeviceVideoContract {
     interface Presenter extends BasePresenter {
         void loadVideos();
+        void playVideo(Video video);
     }
 
     interface  View extends BaseView<ListDeviceVideoContract.Presenter> {
         void showVideos(List<Video> videos);
         void showEmptyView();
+        void showVideoPlay(Video video);
     }
 }

@@ -1,10 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout
     xmlns:android="http://schemas.android.com/apk/res/android">
-    <data></data>
+    <data>
+
+        <variable
+            name="actionHandler"
+            type="com.project.nghicv.videochathead.screen.listdevicevideo.ListDeviceVideoContract.Presenter"/>
+    </data>
     <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/refresh_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:onRefresh="@{actionHandler}"
         >
 
         <FrameLayout
@@ -13,10 +20,11 @@
             >
 
             <FrameLayout
-                android:id=""
+                android:id="@+id/container_video"
                 android:layout_width="match_parent"
                 android:layout_height="300dp"
                 android:padding="16dp"
+                android:visibility="gone"
                 >
 
                 <com.google.android.exoplayer2.ui.SimpleExoPlayerView

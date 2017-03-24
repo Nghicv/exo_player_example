@@ -1,6 +1,7 @@
 package com.project.nghicv.videochathead.services;
 
 import android.animation.Animator;
+import android.app.AlertDialog;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.PixelFormat;
@@ -50,6 +51,7 @@ public class VideoPlayerService extends Service {
     private RelativeLayout mLayoutHeader;
     private SimpleExoPlayerView mSimpleExoPlayerView;
     private SimpleExoPlayer mPlayer;
+    private AlertDialog mDialog;
 
     private PlaybackControlView.VisibilityListener mVisibilityListener =
             new PlaybackControlView.VisibilityListener() {
@@ -239,5 +241,57 @@ public class VideoPlayerService extends Service {
     public int dpToPx(int dp) {
         DisplayMetrics displayMetrics = getBaseContext().getResources().getDisplayMetrics();
         return Math.round(dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT));
+    }
+
+    private void setupLayoutDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getBaseContext());
+        LayoutInflater inflater = LayoutInflater.from(getBaseContext());
+        mVideoPlayerLayout = inflater.inflate(R.layout.layout_video_player, null);
+
+        mLayoutHeader = (RelativeLayout) mVideoPlayerLayout.findViewById(R.id.ll_header);
+        mSimpleExoPlayerView =
+                (SimpleExoPlayerView) mVideoPlayerLayout.findViewById(R.id.simple_exo_player_view);
+        mSimpleExoPlayerView.requestFocus();
+        mSimpleExoPlayerView.setUseController(true);
+        mVideoPlayerLayout.findViewById(R.id.btn_close)
+                .setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        mVideoPlayerLayout.animate()
+                                .alpha(0)
+                                .setDuration(500).setListener(new Animator.AnimatorListener() {
+                            @Override
+                            public void onAnimationStart(Animator animator) {
+
+                            }
+
+                            @Override
+                            public void onAnimationEnd(Animator animator) {
+                                stopSelf();
+                            }
+
+                            @Override
+                            public void onAnimationCancel(Animator animator) {
+
+                            }
+
+                            @Override
+                            public void onAnimationRepeat(Animator animator) {
+
+                            }
+                        });
+                    }
+                });
+        mSimpleExoPlayerView.setControllerVisibilityListener(mVisibilityListener);
+        builder.setView(mVideoPlayerLayout);
+        mDialog = builder.create();
+        WindowManager.LayoutParams layoutParams = mDialog.getWindow().getAttributes();
+        layoutParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_ERROR;
+        layoutParams.flags = WindowManager.LayoutParams.FLAG_DIM_BEHIND;
+        mDialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, WindowManager
+                .LayoutParams.FLAG_NOT_FOCUSABLE);
+        mDialog.getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD | WindowManager
+                .LayoutParams.FLAG_FULLSCREEN);
+        mDialog.show();
     }
 }
