@@ -6,6 +6,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.net.Uri;
+import android.os.Binder;
 import android.os.IBinder;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -46,12 +47,15 @@ import static com.google.android.exoplayer2.mediacodec.MediaCodecInfo.TAG;
 
 public class VideoPlayerService extends Service {
 
+    private static final String DEFAULT_URL = "http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4";
     private WindowManager mWindowManager;
     private View mVideoPlayerLayout;
     private RelativeLayout mLayoutHeader;
     private SimpleExoPlayerView mSimpleExoPlayerView;
     private SimpleExoPlayer mPlayer;
     private AlertDialog mDialog;
+
+    private WindowManager.LayoutParams mParams;
 
     private PlaybackControlView.VisibilityListener mVisibilityListener =
             new PlaybackControlView.VisibilityListener() {
@@ -63,8 +67,7 @@ public class VideoPlayerService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        // Not used
-        return null;
+        return new VideoPlayerServiceBinder();
     }
 
     @Override
@@ -73,16 +76,14 @@ public class VideoPlayerService extends Service {
 
         mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         setUpLayout();
-        final WindowManager.LayoutParams params =
-                new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT,
-                        WindowManager.LayoutParams.WRAP_CONTENT,
-                        WindowManager.LayoutParams.TYPE_PHONE,
-                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);
+        mParams = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.TYPE_PHONE,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);
 
-        params.gravity = Gravity.TOP | Gravity.LEFT;
-        params.windowAnimations = android.R.style.Animation_Toast;
-        params.x = 0;
-        params.y = dpToPx(60);
+        mParams.gravity = Gravity.TOP | Gravity.LEFT;
+        mParams.windowAnimations = android.R.style.Animation_Toast;
+        mParams.x = 0;
+        mParams.y = dpToPx(60);
         mLayoutHeader.setOnTouchListener(new View.OnTouchListener() {
             private int initialX;
             private int initialY;
@@ -93,23 +94,22 @@ public class VideoPlayerService extends Service {
             public boolean onTouch(View v, MotionEvent event) {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        initialX = params.x;
-                        initialY = params.y;
+                        initialX = mParams.x;
+                        initialY = mParams.y;
                         initialTouchX = event.getRawX();
                         initialTouchY = event.getRawY();
                         return true;
                     case MotionEvent.ACTION_UP:
                         return true;
                     case MotionEvent.ACTION_MOVE:
-                        params.x = initialX + (int) (event.getRawX() - initialTouchX);
-                        params.y = initialY + (int) (event.getRawY() - initialTouchY);
-                        mWindowManager.updateViewLayout(mVideoPlayerLayout, params);
+                        mParams.x = initialX + (int) (event.getRawX() - initialTouchX);
+                        mParams.y = initialY + (int) (event.getRawY() - initialTouchY);
+                        mWindowManager.updateViewLayout(mVideoPlayerLayout, mParams);
                         return true;
                 }
                 return false;
             }
         });
-        mWindowManager.addView(mVideoPlayerLayout, params);
         initializePlayer();
     }
 
@@ -142,27 +142,28 @@ public class VideoPlayerService extends Service {
                     public void onClick(View view) {
                         mVideoPlayerLayout.animate()
                                 .alpha(0)
-                                .setDuration(500).setListener(new Animator.AnimatorListener() {
-                            @Override
-                            public void onAnimationStart(Animator animator) {
+                                .setDuration(500)
+                                .setListener(new Animator.AnimatorListener() {
+                                    @Override
+                                    public void onAnimationStart(Animator animator) {
 
-                            }
+                                    }
 
-                            @Override
-                            public void onAnimationEnd(Animator animator) {
-                                stopSelf();
-                            }
+                                    @Override
+                                    public void onAnimationEnd(Animator animator) {
+                                        hideVideo();
+                                    }
 
-                            @Override
-                            public void onAnimationCancel(Animator animator) {
+                                    @Override
+                                    public void onAnimationCancel(Animator animator) {
 
-                            }
+                                    }
 
-                            @Override
-                            public void onAnimationRepeat(Animator animator) {
+                                    @Override
+                                    public void onAnimationRepeat(Animator animator) {
 
-                            }
-                        });
+                                    }
+                                });
                     }
                 });
         mSimpleExoPlayerView.setControllerVisibilityListener(mVisibilityListener);
@@ -182,23 +183,6 @@ public class VideoPlayerService extends Service {
         mPlayer = ExoPlayerFactory.newSimpleInstance(getBaseContext(), trackSelector, loadControl);
 
         mSimpleExoPlayerView.setPlayer(mPlayer);
-
-        DefaultBandwidthMeter defaultBandwidthMeter = new DefaultBandwidthMeter();
-        // Produces DataSource instances through which media data is loaded.
-        DataSource.Factory dataSourceFactory =
-                new DefaultDataSourceFactory(this, Util.getUserAgent(this, "exoplayerexample"),
-                        defaultBandwidthMeter);
-        // Produces Extractor instances for parsing the media data.
-        ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
-        // This is the MediaSource representing the media to be played.
-        Uri uri = Uri.parse("http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4");
-        MediaSource videoSource =
-                new ExtractorMediaSource(uri, dataSourceFactory, extractorsFactory, null, null);
-      /*  MediaSource videoSource = new HlsMediaSource(uri, dataSourceFactory, 1, null,
-                null);*/
-        // Prepare the mPlayer with the source.
-        final LoopingMediaSource loopingSource = new LoopingMediaSource(videoSource);
-        mPlayer.prepare(loopingSource);
 
         mPlayer.addListener(new ExoPlayer.EventListener() {
             @Override
@@ -226,7 +210,6 @@ public class VideoPlayerService extends Service {
             public void onPlayerError(ExoPlaybackException error) {
                 Log.v(TAG, "Listener-onPlayerError...");
                 mPlayer.stop();
-                mPlayer.prepare(loopingSource);
                 mPlayer.setPlayWhenReady(true);
             }
 
@@ -235,7 +218,36 @@ public class VideoPlayerService extends Service {
                 Log.v(TAG, "Listener-onPositionDiscontinuity...");
             }
         });
+    }
+
+    public void setupDatasource(String url) {
+        DefaultBandwidthMeter defaultBandwidthMeter = new DefaultBandwidthMeter();
+        // Produces DataSource instances through which media data is loaded.
+        DataSource.Factory dataSourceFactory =
+                new DefaultDataSourceFactory(this, Util.getUserAgent(this, "exoplayerexample"),
+                        defaultBandwidthMeter);
+        // Produces Extractor instances for parsing the media data.
+        ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
+        // This is the MediaSource representing the media to be played.
+        Uri uri = Uri.parse(url);
+        MediaSource videoSource =
+                new ExtractorMediaSource(uri, dataSourceFactory, extractorsFactory, null, null);
+      /*  MediaSource videoSource = new HlsMediaSource(uri, dataSourceFactory, 1, null,
+                null);*/
+        // Prepare the mPlayer with the source.
+        final LoopingMediaSource loopingSource = new LoopingMediaSource(videoSource);
+        mPlayer.prepare(loopingSource);
         mPlayer.setPlayWhenReady(true);
+        showVideo();
+    }
+
+    public void showVideo() {
+        mWindowManager.addView(mVideoPlayerLayout, mParams);
+    }
+
+    public void hideVideo() {
+        mPlayer.release();
+        mWindowManager.removeView(mVideoPlayerLayout);
     }
 
     public int dpToPx(int dp) {
@@ -259,27 +271,28 @@ public class VideoPlayerService extends Service {
                     public void onClick(View view) {
                         mVideoPlayerLayout.animate()
                                 .alpha(0)
-                                .setDuration(500).setListener(new Animator.AnimatorListener() {
-                            @Override
-                            public void onAnimationStart(Animator animator) {
+                                .setDuration(500)
+                                .setListener(new Animator.AnimatorListener() {
+                                    @Override
+                                    public void onAnimationStart(Animator animator) {
 
-                            }
+                                    }
 
-                            @Override
-                            public void onAnimationEnd(Animator animator) {
-                                stopSelf();
-                            }
+                                    @Override
+                                    public void onAnimationEnd(Animator animator) {
+                                        stopSelf();
+                                    }
 
-                            @Override
-                            public void onAnimationCancel(Animator animator) {
+                                    @Override
+                                    public void onAnimationCancel(Animator animator) {
 
-                            }
+                                    }
 
-                            @Override
-                            public void onAnimationRepeat(Animator animator) {
+                                    @Override
+                                    public void onAnimationRepeat(Animator animator) {
 
-                            }
-                        });
+                                    }
+                                });
                     }
                 });
         mSimpleExoPlayerView.setControllerVisibilityListener(mVisibilityListener);
@@ -288,10 +301,18 @@ public class VideoPlayerService extends Service {
         WindowManager.LayoutParams layoutParams = mDialog.getWindow().getAttributes();
         layoutParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_ERROR;
         layoutParams.flags = WindowManager.LayoutParams.FLAG_DIM_BEHIND;
-        mDialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, WindowManager
-                .LayoutParams.FLAG_NOT_FOCUSABLE);
-        mDialog.getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD | WindowManager
-                .LayoutParams.FLAG_FULLSCREEN);
+        mDialog.getWindow()
+                .setFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
+        mDialog.getWindow()
+                .addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+                        | WindowManager.LayoutParams.FLAG_FULLSCREEN);
         mDialog.show();
+    }
+
+    public class VideoPlayerServiceBinder extends Binder {
+        public VideoPlayerService getService() {
+            return VideoPlayerService.this;
+        }
     }
 }

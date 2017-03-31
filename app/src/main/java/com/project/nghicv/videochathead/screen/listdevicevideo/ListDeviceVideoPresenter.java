@@ -31,7 +31,7 @@ public class ListDeviceVideoPresenter implements ListDeviceVideoContract.Present
 
     @Override
     public void playVideo(Video video) {
-        mView.showVideoPlay(video);
+        VideoPlayerApp.getInstance().getVideoPlayerService().setupDatasource(video.getFilePath());
     }
 
     private List<Video> loadVideosFromDevice() {

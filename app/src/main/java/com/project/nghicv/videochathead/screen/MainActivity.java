@@ -1,5 +1,6 @@
 package com.project.nghicv.videochathead.screen;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -7,8 +8,10 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import com.project.nghicv.videochathead.R;
+import com.project.nghicv.videochathead.common.utils.BottomNavigationShiftHelper;
 import com.project.nghicv.videochathead.screen.listaudio.ListAudioFragment;
 import com.project.nghicv.videochathead.screen.listdevicevideo.ListDeviceVideoFragment;
+import com.project.nghicv.videochathead.services.VideoPlayerService;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -17,8 +20,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        startService(new Intent(this, VideoPlayerService.class));
         setContentView(R.layout.activity_main);
         mBottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_bar);
+        BottomNavigationShiftHelper.disableShiftMode(mBottomNavigationView);
         mBottomNavigationView.setOnNavigationItemSelectedListener(
                 new BottomNavigationView.OnNavigationItemSelectedListener() {
                     @Override

@@ -24,13 +24,14 @@
 
         <ImageView
             android:id="@+id/btn_close"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="50dp"
+            android:layout_height="match_parent"
             android:layout_gravity="right|center_vertical"
             android:layout_centerVertical="true"
             android:layout_alignParentRight="true"
-            android:layout_marginRight="16dp"
+            android:scaleType="centerInside"
             android:src="@drawable/ic_close"
+            android:background="@drawable/bg_button_close"
             />
     </RelativeLayout>
 </FrameLayout>

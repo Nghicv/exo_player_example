@@ -17,68 +17,76 @@
 
 
     </data>
-
-    <RelativeLayout
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingLeft="16dp"
-        android:paddingRight="16dp"
-        android:paddingBottom="8dp"
-        android:paddingTop="8dp"
-        android:onClick="@{() -> actionHandler.videoClicked(video)}"
+        android:paddingLeft="@dimen/padding_margin_normal"
+        android:paddingRight="@dimen/padding_margin_normal"
+        android:paddingBottom="@dimen/padding_margin_small"
+        android:paddingTop="@dimen/padding_margin_small"
         >
-        <FrameLayout
-            android:id="@+id/frame_thumb"
-            android:layout_width="100dp"
-            android:layout_height="60dp"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentTop="true"
-            android:background="@android:color/black"
-            android:paddingTop="4dp"
-            android:paddingBottom="4dp"
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/frame_video_height"
+            android:orientation="vertical"
+            android:onClick="@{() -> actionHandler.videoClicked(video)}"
             >
-
-            <ImageView
-                android:id="@+id/img_thumb"
-                android:layout_width="match_parent"
+            <FrameLayout
+                android:id="@+id/frame_thumb"
+                android:layout_width="@dimen/frame_video_width"
                 android:layout_height="match_parent"
-                android:scaleType="fitXY"
-                android:src="@drawable/ic_launcher"
-                bind:imageUrl="@{video.filePath}"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentTop="true"
+                android:background="@android:color/black"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp"
+                >
+
+                <ImageView
+                    android:id="@+id/img_thumb"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/ic_launcher"
+                    bind:imageUrl="@{video.filePath}"
+                    />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/tv_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@+id/frame_thumb"
+                android:layout_marginLeft="@dimen/padding_margin_small"
+                android:text="@{video.title}"
+                android:textSize="@dimen/text_size_normal"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:gravity="top"
                 />
-        </FrameLayout>
 
-        <TextView
-            android:id="@+id/tv_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toRightOf="@+id/frame_thumb"
-            android:layout_marginLeft="8dp"
-            android:text="@{video.title}"
-            android:textSize="18sp"
-            />
+            <TextView
+                android:id="@+id/tv_duration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@+id/frame_thumb"
+                android:layout_marginLeft="@dimen/padding_margin_small"
+                android:layout_alignParentBottom="true"
+                android:textSize="@dimen/text_size_small"
+                android:textColor="@color/colorAccent"
+                android:gravity="bottom"
+                android:text="@{video.duration}"
+                />
 
-        <TextView
-            android:id="@+id/tv_duration"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/tv_title"
-            android:layout_toRightOf="@+id/frame_thumb"
-            android:layout_marginLeft="8dp"
-            android:layout_alignParentBottom="true"
-            android:textSize="11sp"
-            android:text="@{video.duration}"
-            />
-        
-        <TextView
-            android:id="@+id/tv_added_date"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentBottom="true"
-            android:textSize="13sp"
-            android:text="@{video.date}"
-            />
-    </RelativeLayout>
+            <TextView
+                android:id="@+id/tv_added_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentBottom="true"
+                android:textSize="12sp"
+                android:text="@{video.date}"
+                />
+        </RelativeLayout>
+    </FrameLayout>
 </layout>
