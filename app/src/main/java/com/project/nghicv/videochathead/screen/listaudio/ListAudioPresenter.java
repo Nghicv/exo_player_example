@@ -12,4 +12,14 @@ public class ListAudioPresenter implements ListAudioContract.Presenter {
     public void loadAudios() {
 
     }
+
+    @Override
+    public void subscriber() {
+
+    }
+
+    @Override
+    public void unSubscriber() {
+
+    }
 }

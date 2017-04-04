@@ -75,7 +75,7 @@ public class VideoPlayerService extends Service {
         super.onCreate();
 
         mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        setUpLayout();
+        setupLayoutDialog();
         mParams = new WindowManager.LayoutParams(WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.TYPE_PHONE,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);
@@ -111,6 +111,8 @@ public class VideoPlayerService extends Service {
             }
         });
         initializePlayer();
+        //addVideoToWindowManage();
+        hideVideo();
     }
 
     @Override
@@ -238,16 +240,21 @@ public class VideoPlayerService extends Service {
         final LoopingMediaSource loopingSource = new LoopingMediaSource(videoSource);
         mPlayer.prepare(loopingSource);
         mPlayer.setPlayWhenReady(true);
-        showVideo();
+        setupLayoutDialog();
     }
 
-    public void showVideo() {
+    private void addVideoToWindowManage() {
         mWindowManager.addView(mVideoPlayerLayout, mParams);
     }
 
+    public void showVideo() {
+        mVideoPlayerLayout.setVisibility(View.VISIBLE);
+        mSimpleExoPlayerView.requestFocus();
+        mSimpleExoPlayerView.setUseController(true);
+    }
+
     public void hideVideo() {
-        mPlayer.release();
-        mWindowManager.removeView(mVideoPlayerLayout);
+        mVideoPlayerLayout.setVisibility(View.GONE);
     }
 
     public int dpToPx(int dp) {
@@ -299,15 +306,15 @@ public class VideoPlayerService extends Service {
         builder.setView(mVideoPlayerLayout);
         mDialog = builder.create();
         WindowManager.LayoutParams layoutParams = mDialog.getWindow().getAttributes();
-        layoutParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_ERROR;
         layoutParams.flags = WindowManager.LayoutParams.FLAG_DIM_BEHIND;
-        mDialog.getWindow()
+        mDialog.getWindow().setAttributes(layoutParams);
+        /*mDialog.getWindow()
                 .setFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                         WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
         mDialog.getWindow()
                 .addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
-                        | WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        mDialog.show();
+                        | WindowManager.LayoutParams.FLAG_FULLSCREEN);*/
+        //mDialog.show();
     }
 
     public class VideoPlayerServiceBinder extends Binder {

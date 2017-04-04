@@ -1,17 +1,18 @@
 buildscript {
-    repositories {
-        maven { url 'https://maven.fabric.io/public' }
-    }
+  repositories {
+    maven { url 'https://maven.fabric.io/public' }
+  }
 
-    dependencies {
-        classpath 'io.fabric.tools:gradle:1.+'
-    }
+  dependencies {
+    classpath 'io.fabric.tools:gradle:1.+'
+  }
 }
 apply plugin: 'com.android.application'
 apply plugin: 'io.fabric'
+apply plugin: 'me.tatarka.retrolambda'
 
 repositories {
-    maven { url 'https://maven.fabric.io/public' }
+  maven { url 'https://maven.fabric.io/public' }
 }
 
 
@@ -26,6 +27,11 @@ android {
     versionName "1.0"
     testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     multiDexEnabled true
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
   }
 
   def keystorePropertiesFile = rootProject.file("keystore.properties")
@@ -87,9 +93,11 @@ dependencies {
   compile 'com.android.support.constraint:constraint-layout:1.0.1'
   testCompile 'junit:junit:4.12'
   compile 'com.google.android.exoplayer:exoplayer:r2.3.0'
-    compile('com.crashlytics.sdk.android:crashlytics:2.6.7@aar') {
-        transitive = true;
-    }
+  compile('com.crashlytics.sdk.android:crashlytics:2.6.7@aar') {
+    transitive = true;
+  }
   compile 'com.github.bumptech.glide:glide:3.7.0'
   compile "com.android.support:cardview-v7:${SUPPORT_LIBRARY_VERSION}"
+  compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
+  compile 'io.reactivex.rxjava2:rxjava:2.0.1'
 }

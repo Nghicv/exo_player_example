@@ -1,7 +1,6 @@
 package com.project.nghicv.videochathead.screen.listdevicevideo;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -69,11 +68,6 @@ public class ListDeviceVideoFragment extends BaseFragment<ListDeviceVideoContrac
     @Override
     public void setPresenter(ListDeviceVideoContract.Presenter presenter) {
         mPresenter = presenter;
-    }
-
-    @Override
-    public Context getContextFragment() {
-        return getActivity();
     }
 
     @Override

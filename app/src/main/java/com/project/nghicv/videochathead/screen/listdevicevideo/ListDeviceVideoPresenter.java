@@ -8,12 +8,18 @@ import com.project.nghicv.videochathead.R;
 import com.project.nghicv.videochathead.VideoPlayerApp;
 import com.project.nghicv.videochathead.common.utils.DateUtil;
 import com.project.nghicv.videochathead.model.Video;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ListDeviceVideoPresenter implements ListDeviceVideoContract.Presenter {
 
     private ListDeviceVideoContract.View mView;
+    private CompositeDisposable mDisposable = new CompositeDisposable();
 
     public ListDeviceVideoPresenter(ListDeviceVideoContract.View view) {
         mView = view;
@@ -21,12 +27,18 @@ public class ListDeviceVideoPresenter implements ListDeviceVideoContract.Present
 
     @Override
     public void loadVideos() {
-        List<Video> videos = loadVideosFromDevice();
-        if (videos == null || videos.size() <= 0) {
-            mView.showEmptyView();
-            return;
-        }
-        mView.showVideos(videos);
+        mDisposable.clear();
+        Disposable disposable = Observable.defer(() -> {
+            return Observable.fromArray(loadVideosFromDevice());
+        })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(videos -> {
+                    mView.showVideos(videos);
+                }, error -> {
+                    mView.showEmptyView();
+                });
+        mDisposable.add(disposable);
     }
 
     @Override
@@ -35,6 +47,7 @@ public class ListDeviceVideoPresenter implements ListDeviceVideoContract.Present
     }
 
     private List<Video> loadVideosFromDevice() {
+        Uri uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
         List<Video> videos = new ArrayList<>();
         String[] thumbColumns = { MediaStore.Video.Thumbnails.DATA };
         String[] mediaColumns = {
@@ -42,7 +55,6 @@ public class ListDeviceVideoPresenter implements ListDeviceVideoContract.Present
                 MediaStore.Video.Media.TITLE, MediaStore.Video.Media.MIME_TYPE,
                 MediaStore.Video.Media.DURATION, MediaStore.Video.Media.DATE_ADDED
         };
-        Uri uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
 
         ContentResolver contentResolver = VideoPlayerApp.getInstance().getContentResolver();
         Cursor cursor = contentResolver.query(uri, mediaColumns, null, null, null);
@@ -67,9 +79,10 @@ public class ListDeviceVideoPresenter implements ListDeviceVideoContract.Present
                 String mimeType = cursor.getString(cursor.getColumnIndexOrThrow(mediaColumns[3]));
                 long duration = cursor.getLong(cursor.getColumnIndexOrThrow(mediaColumns[4]));
                 String durationString = formatTime(duration);
-                String date = DateUtil.formatDate(cursor.getLong(cursor.getColumnIndexOrThrow
-                        (mediaColumns[5])));
-                videos.add(new Video(id, filePath, title, thumbPath, mimeType, durationString, date));
+                String date = DateUtil.formatDate(
+                        cursor.getLong(cursor.getColumnIndexOrThrow(mediaColumns[5])));
+                videos.add(
+                        new Video(id, filePath, title, thumbPath, mimeType, durationString, date));
             } while (cursor.moveToNext());
         }
 
@@ -96,5 +109,15 @@ public class ListDeviceVideoPresenter implements ListDeviceVideoContract.Present
         int second = (timeSecond % 3600) % 60;
         return mView.getContextFragment()
                 .getString(R.string.format_time_hour_video, hour, minute, second);
+    }
+
+    @Override
+    public void subscriber() {
+
+    }
+
+    @Override
+    public void unSubscriber() {
+        mDisposable.clear();
     }
 }

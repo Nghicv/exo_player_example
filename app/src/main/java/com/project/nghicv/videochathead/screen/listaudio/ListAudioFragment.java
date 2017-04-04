@@ -1,6 +1,5 @@
 package com.project.nghicv.videochathead.screen.listaudio;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
@@ -31,11 +30,6 @@ public class ListAudioFragment extends BaseFragment<ListAudioContract.Presenter>
     @Override
     public void setPresenter(ListAudioContract.Presenter presenter) {
         mPresenter = presenter;
-    }
-
-    @Override
-    public Context getContextFragment() {
-        return null;
     }
 
     @Override
