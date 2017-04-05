@@ -104,6 +104,16 @@ public class ListDeviceVideoFragment extends BaseFragment<ListDeviceVideoContrac
     }
 
     @Override
+    public void showViewIndicator() {
+        mBinding.refreshLayout.setRefreshing(true);
+    }
+
+    @Override
+    public void hideViewIndicator() {
+        mBinding.refreshLayout.setRefreshing(false);
+    }
+
+    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
             @NonNull int[] grantResults) {
         switch (requestCode) {

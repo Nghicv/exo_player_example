@@ -15,5 +15,7 @@ public interface ListDeviceVideoContract {
         void showVideos(List<Video> videos);
         void showEmptyView();
         void showVideoPlay(Video video);
+        void showViewIndicator();
+        void hideViewIndicator();
     }
 }
