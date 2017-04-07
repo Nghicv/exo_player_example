@@ -24,12 +24,13 @@
         android:paddingRight="@dimen/padding_margin_normal"
         android:paddingBottom="@dimen/padding_margin_small"
         android:paddingTop="@dimen/padding_margin_small"
+        android:onClick="@{() -> actionHandler.videoClicked(video)}"
+        android:background="@drawable/bg_common_view"
         >
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="@dimen/frame_video_height"
             android:orientation="vertical"
-            android:onClick="@{() -> actionHandler.videoClicked(video)}"
             >
             <FrameLayout
                 android:id="@+id/frame_thumb"

@@ -82,7 +82,6 @@
             android:includeFontPadding="false"
             android:textColor="#FFBEBEBE"
             />
-
     </LinearLayout>
 
 </RelativeLayout>

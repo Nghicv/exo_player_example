@@ -1,6 +1,5 @@
 package com.project.nghicv.videochathead.services;
 
-import android.animation.Animator;
 import android.app.Service;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
@@ -26,7 +25,6 @@ import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.extractor.ExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
-import com.google.android.exoplayer2.source.LoopingMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
@@ -48,7 +46,6 @@ import static com.google.android.exoplayer2.mediacodec.MediaCodecInfo.TAG;
 
 public class VideoPlayerService extends Service {
 
-    private static final String DEFAULT_URL = "http://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4";
     private WindowManager mWindowManager;
     private View mVideoPlayerLayout;
     private RelativeLayout mLayoutHeader;
@@ -95,6 +92,9 @@ public class VideoPlayerService extends Service {
     }
 
     private void initViews() {
+        if (mWindowManager != null) {
+            mWindowManager.removeView(mVideoPlayerLayout);
+        }
         LayoutInflater inflater = LayoutInflater.from(getBaseContext());
         mPlayerBinding =
                 DataBindingUtil.inflate(inflater, R.layout.layout_video_player, null, false);
@@ -115,11 +115,12 @@ public class VideoPlayerService extends Service {
         mParams.windowAnimations = android.R.style.Animation_Toast;
         mParams.x = 0;
         mParams.y = dpToPx(60);
-        mLayoutHeader.setOnTouchListener(new View.OnTouchListener() {
+        mSimpleExoPlayerView.setOnTouchListener(new View.OnTouchListener() {
             private int initialX;
             private int initialY;
             private float initialTouchX;
             private float initialTouchY;
+            boolean isClicked;
 
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -129,13 +130,22 @@ public class VideoPlayerService extends Service {
                         initialY = mParams.y;
                         initialTouchX = event.getRawX();
                         initialTouchY = event.getRawY();
+                        isClicked = true;
                         return true;
                     case MotionEvent.ACTION_UP:
+                        if (isClicked) {
+                            mVisibilityListener.onVisibilityChange(View.VISIBLE);
+                            mSimpleExoPlayerView.showController();
+                        }
                         return true;
                     case MotionEvent.ACTION_MOVE:
                         mParams.x = initialX + (int) (event.getRawX() - initialTouchX);
                         mParams.y = initialY + (int) (event.getRawY() - initialTouchY);
                         mWindowManager.updateViewLayout(mVideoPlayerLayout, mParams);
+                        if (Math.abs(event.getRawX() - initialTouchX) > 20
+                                || Math.abs(event.getRawY() - initialTouchY) > 20) {
+                            isClicked = false;
+                        }
                         return true;
                 }
                 return false;
@@ -196,15 +206,15 @@ public class VideoPlayerService extends Service {
         Uri uri = Uri.parse(url);
         MediaSource videoSource =
                 new ExtractorMediaSource(uri, dataSourceFactory, extractorsFactory, null, null);
-        final LoopingMediaSource loopingSource = new LoopingMediaSource(videoSource);
-        mPlayer.prepare(loopingSource);
+        mPlayer.prepare(videoSource);
         mPlayer.setPlayWhenReady(true);
         showVideo();
     }
 
     private void addVideoToWindowManage() {
         mIsAddedVideo = true;
-        mWindowManager.addView(mVideoPlayerLayout, mParams);
+        mWindowManager.addView(mPlayerBinding.getRoot(), mParams);
+        mWindowManager.updateViewLayout(mVideoPlayerLayout, mParams);
     }
 
     private void hideVideo() {
@@ -233,29 +243,6 @@ public class VideoPlayerService extends Service {
     }
 
     private View.OnClickListener mCloseWindowListener = view -> {
-        mVideoPlayerLayout.animate()
-                .alpha(0)
-                .setDuration(500)
-                .setListener(new Animator.AnimatorListener() {
-                    @Override
-                    public void onAnimationStart(Animator animator) {
-
-                    }
-
-                    @Override
-                    public void onAnimationEnd(Animator animator) {
-                        hideVideo();
-                    }
-
-                    @Override
-                    public void onAnimationCancel(Animator animator) {
-
-                    }
-
-                    @Override
-                    public void onAnimationRepeat(Animator animator) {
-
-                    }
-                });
+        hideVideo();
     };
 }
